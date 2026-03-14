@@ -365,28 +365,28 @@
 
 <div class="half">
 
-<h1 class="building-title">
-<span class="hidden-in-edit-mode">
-    Espacio <?php echo htmlspecialchars($id['codigo']); ?>
-</span>
+    <h1 class="building-title">
+        <span class="hidden-in-edit-mode">
+            Espacio <?php echo htmlspecialchars($id['codigo']); ?>
+        </span>
 
-<!-- MODO EDICIÓN -->
-<input type="text" name="codigo"
-value="<?php echo htmlspecialchars($id['codigo']); ?>"
-class="editable-field hidden-in-view-mode">
+        <!-- MODO EDICIÓN -->
+        <input type="text" name="codigo"
+        value="<?php echo htmlspecialchars($id['codigo']); ?>"
+        class="editable-field hidden-in-view-mode">
 
-</h1>
+    </h1>
 
-<div class="tabs">
-<button type="button" class="tab-button active"
-data-tab="info">
-<i class="fa-solid fa-circle-info"></i> Información
-</button>
+    <div class="tabs">
+        <button type="button" class="tab-button active"
+        data-tab="info">
+        <i class="fa-solid fa-circle-info"></i> Información
+        </button>
 
-<button type="button" class="tab-button"
-data-tab="equipamiento">
-<i class="ti ti-tool"></i> Equipamiento
-</button>
+        <button type="button" class="tab-button"
+        data-tab="equipamiento">
+        <i class="ti ti-tool"></i> Equipamiento
+        </button>
 </div>
 
 <!-- TAB INFORMACIÓN -->
