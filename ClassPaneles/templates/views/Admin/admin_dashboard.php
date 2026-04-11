@@ -33,15 +33,15 @@ SELECT
     ed.nombre AS Edificio,
     re.estado,
     re.descripcion,
-    re.fecha_reporte
-FROM reportes_equipamiento re
+    re.fecha_solicitud
+FROM solicitudes_reporte_docente re
 LEFT JOIN usuarios us ON re.id_usuario = us.id
 LEFT JOIN espacios_equipamiento ee ON re.espacio_equipamiento_id = ee.id
 LEFT JOIN equipamiento eq ON ee.equipamiento_id = eq.id
 LEFT JOIN espacios_academicos ea ON ee.espacio_id = ea.id
 LEFT JOIN edificios ed ON ea.edificio_id = ed.id
-WHERE DATE(re.fecha_reporte) >= CURDATE() - INTERVAL 1 DAY
-ORDER BY re.fecha_reporte DESC
+WHERE DATE(re.fecha_solicitud) >= CURDATE() - INTERVAL 1 DAY
+ORDER BY re.fecha_solicitud DESC
 ";
 
 $result = $conexion->query($query);
@@ -432,7 +432,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                     </div>
 
                     <div class="reporte-fecha">
-                        <?= date('Y-m-d', strtotime($row['fecha_reporte'])) ?>
+                        <?= date('Y-m-d', strtotime($row['fecha_solicitud'])) ?>
                     </div>
                 </div>
 

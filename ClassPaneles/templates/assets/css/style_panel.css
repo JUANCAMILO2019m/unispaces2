@@ -968,7 +968,7 @@ tr:hover .fecha-hora {
     color: red;
     cursor: pointer;
     font-size: 18px;
-    margin-left: 8px;
+    margin-left: 760%;
 }
 
 .delete-button-equip:hover {

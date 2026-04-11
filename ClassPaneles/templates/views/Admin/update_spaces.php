@@ -320,7 +320,7 @@
 
 </div>
 <form id="edit-form" method="POST" enctype="multipart/form-data">
-
+<input type="hidden" name="edificio_id" value="<?php echo $id['edificio_id']; ?>">
 <input type="hidden" name="update_spaces" value="1">
 <input type="hidden" name="id" value="<?php echo $id['id']; ?>">
 

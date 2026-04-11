@@ -47,7 +47,7 @@ if ($verificar_correo && mysqli_num_rows($verificar_correo) > 0) {
 
         // Contenido del correo
         $mail->isHTML(true);
-        $mail->Subject = 'Recuperación de contraseña - ClassTrack';
+        $mail->Subject = 'Recuperación de contraseña - Unispace';
         $mail->AddEmbeddedImage(__DIR__ . './../assets/images/logo_correo.png','logoimg','logo_correo.png');
         $mail->Body = "
                       <img src='cid:logoimg' alt='ClassTrack Logo' style='width: 350px; height: 250px'>

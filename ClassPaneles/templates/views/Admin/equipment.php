@@ -181,7 +181,7 @@ while ($row = mysqli_fetch_assoc($result)) {
             <img src="<?php echo htmlspecialchars($equipamiento['imagen']); ?>" alt="Equipamiento" class="building-image">
             <div class="building-info">
                 <h3><?php echo htmlspecialchars($equipamiento['nombre']); ?></h3>
-            <div class="actions">
+                <div class="actions">
                 <!-- Botón editar -->
                 <a href="update_equipment.php?id=<?php echo htmlspecialchars($equipamiento['id']); ?>" class="edit-button">
                     <i class="ti ti-edit"></i>

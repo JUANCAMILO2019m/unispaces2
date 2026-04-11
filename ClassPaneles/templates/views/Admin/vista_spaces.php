@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagen = null;
 
     if ($imagen === null) {
-        $imagen = "../../assets/images/default_building.png";
+        $imagen = "../../assets/images/aules_formatives.jpg";
     }
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         $nombre_imagen = $_FILES['imagen']['name'];
@@ -55,7 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES ('$codigo', '$capacidad','$tipo_espacio', '$descripcion_general', '$imagen','$building_id')";
 
     if (mysqli_query($conexion, $query)) {
-        echo "<script>alert('Espacio registrado con éxito.'); window.location.href='register_buldings.php';</script>";
+        echo "<script>alert('Espacio registrado con éxito.'); window.location.href='vista_spaces.php?edificio_id=$building_id';
+</script>";
     } else {
         echo "<script>alert('Error al registrar el espacio: " . mysqli_error($conexion) . "');</script>";
     }
