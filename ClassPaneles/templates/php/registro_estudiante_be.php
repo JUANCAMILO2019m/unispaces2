@@ -23,6 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $query = "INSERT INTO estudiantes (nombre_completo, correo, identificacion, imagen)
               VALUES ('$nombre_completo', '$correo', '$identificacion', '$imagen')";
 
+    $verificar_correo_estudiante = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE correo='$correo'");
+
+    if(mysqli_num_rows($verificar_correo_estudiante) > 0){
+        echo '
+            <script>
+                alert("El correo que acabas de ingresar ya esta registrado, intenta con otro nuevo");
+                window.location = "../views/Admin/vista_cuentas.php";
+            </script>
+        ';
+        exit();
+    } 
+    //verficar identificacion repetidos
+    $verificar_identi_estudiante = mysqli_query($conexion, "SELECT * FROM estudiantes WHERE usuario='$usuario'");
+
+    if (mysqli_num_rows($verificar_usuario) > 0) {
+        echo '
+            <script>
+                alert("La identifiacion que acabas de ingresar ya esta en uso, intenta con otro nuevo");
+                window.location = "../views/Admin/vista_cuentas.php";
+            </script>
+            ';
+        exit();
+    }
+
     if (mysqli_query($conexion, $query)) {
         header("Location: ../views/Admin/vista_students.php");
         exit();

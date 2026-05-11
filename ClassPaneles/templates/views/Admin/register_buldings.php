@@ -14,6 +14,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = mysqli_real_escape_string($conexion, $_POST['tipo']);
     $descripcion = mysqli_real_escape_string($conexion, $_POST['descripcion']);
 
+    $verificar_nombre_edificio = mysqli_query($conexion, "SELECT * FROM edificios WHERE nombre='$nombre'");
+
+    if(mysqli_num_rows($verificar_nombre_edificio) > 0){
+        echo '
+            <script>
+                alert("El nombre del edificio que acabas de ingresar ya esta registrado, intenta con otro nuevo");
+                window.location = "register_buldings.php";
+            </script>
+        ';
+        exit();
+    } 
+    //verficar identificacion repetidos
+    $verificar_codigo_edificio = mysqli_query($conexion, "SELECT * FROM edificios WHERE codigo='$codigo'");
+
+    if (mysqli_num_rows($verificar_codigo_edificio) > 0) {
+        echo '<script>alert("El código del edificio que acabas de ingresar ya esta en uso, intenta con otro");window.location.href="register_buldings.php";</script>';
+        exit();
+    }
 
     $imagen = null;
 
@@ -47,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         echo "<script>alert('Error al registrar el edificio: " . mysqli_error($conexion) . "');</script>";
     }
+
 }
 // Al inicio del archivo, después de la conexión
 $registros_por_pagina = 6; // Puedes ajustar esto a 9 si prefieres
@@ -157,14 +176,13 @@ while ($row = mysqli_fetch_assoc($result)) {
                                 class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
                             </a></li>
-                    </ul>
-                </div>
-                <div class="menu-group">
-                    <p class="menu-title">Mensajeria</p>
-                    <ul>
-                        <li><a href="messages.php"
-                                class="<?php echo $currentFile == 'messages.php' ? 'active' : ''; ?>">
-                                <ion-icon name="calendar-outline"></ion-icon> Buzon ayuda
+                        <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="table_equipment_reports.php"
+                                class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
                             </a></li>
                     </ul>
                 </div>

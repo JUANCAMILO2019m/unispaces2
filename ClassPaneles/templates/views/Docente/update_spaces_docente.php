@@ -113,6 +113,7 @@ if (isset($_POST['reserve_space'])) {
     $tipo_reservacion = $_POST['tipo_reservacion'];
     $descripcion = $_POST['descripcion'];
     $id_espacio = $_POST['id_espacio'];
+    $cursos = $_POST['cursos'] ?? [];
     $estudiantes = $_POST['estudiantes'];
 
     if (empty($estudiantes) || count($estudiantes) < 1) {
@@ -159,19 +160,42 @@ if (isset($_POST['reserve_space'])) {
 
     $id_reservacion = mysqli_insert_id($conexion);
 
-    // Insertar los estudiantes asociados a la reserva
-    foreach ($estudiantes as $id_estudiante) {
-        $query_validar = "SELECT id FROM estudiantes WHERE id = '$id_estudiante'";
-        $resultado_validar = mysqli_query($conexion, $query_validar);
+   $estudiantes_curso = [];
 
-        if (mysqli_num_rows($resultado_validar)) { 
-            $query_estudiante = "INSERT INTO reservaciones_estudiantes (id_reservacion, id_estudiante) 
-                VALUES ('$id_reservacion', '$id_estudiante')";
-            if (!mysqli_query($conexion, $query_estudiante)) {
-                die("Error al insertar estudiante: " . mysqli_error($conexion));
+    if (!empty($cursos)) {
+
+        foreach ($cursos as $curso_id) {
+
+            $curso_id = (int)$curso_id;
+
+            $queryCurso = "
+                SELECT estudiante_id 
+                FROM cursos_estudiantes 
+                WHERE curso_id = '$curso_id'
+            ";
+
+            $resCurso = mysqli_query($conexion, $queryCurso);
+
+            while ($row = mysqli_fetch_assoc($resCurso)) {
+                $estudiantes_curso[] = $row['estudiante_id'];
             }
         }
     }
+
+    $estudiantes_final = array_unique(array_merge($estudiantes, $estudiantes_curso));
+
+    // Insertar los estudiantes asociados a la reserva
+    foreach ($estudiantes_final as $id_estudiante) {
+
+    $id_estudiante = (int)$id_estudiante;
+
+    $query_estudiante = "
+        INSERT INTO reservaciones_estudiantes (id_reservacion, id_estudiante)
+        VALUES ('$id_reservacion', '$id_estudiante')
+    ";
+
+    mysqli_query($conexion, $query_estudiante);
+}
 
     echo "<script>alert('Solicitud de reserva enviada para aprobación.'); window.location.href='update_spaces_docente.php?id=" . $space_id . "';</script>";
     exit();
@@ -508,18 +532,26 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                     </select>
                 </div>
             </div>
+
             <div class="form-group-container">
                 <div class="form-group">
                         <label for="descripcion">Descripción reserva:</label>
                         <textarea id="descripcion" name="descripcion" class="description-register" rows="4" required></textarea>
                 </div>
-            </div>
-            
+            </div>         
             <div class="form-group">
                 <label for="estudiantes">Añadir Estudiantes:</label>
                 <input type="text" id="estudiantes" name="estudiantes[]" placeholder="Buscar estudiante..." autocomplete="off">
                 <ul id="student-list"></ul>
                 <div id="selected-students"></div>
+            </div>
+            <div class="form-group">
+                <label for="curso">Seleccionar Curso(s):</label>
+
+                <input type="text" id="curso-input" placeholder="Buscar curso..." autocomplete="off">
+                <ul id="curso-list"></ul>
+
+                <div id="selected-cursos"></div>
             </div>
             <div class="form-group-container">
                 <div class="form-group">
@@ -776,6 +808,84 @@ function agregarEstudianteSeleccionado(item) {
     document.getElementById('estudiantes').addEventListener('input', 
         debounce(eventQueryStudents, 300)
     );
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const inputCurso = document.getElementById('curso-input');
+    const listaCursos = document.getElementById('curso-list');
+    const selectedCursos = document.getElementById('selected-cursos');
+
+    // BUSCAR CURSOS
+    inputCurso.addEventListener('input', function () {
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            listaCursos.innerHTML = '';
+            return;
+        }
+
+        fetch(`buscar_cursos.php?query=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                listaCursos.innerHTML = '';
+
+                if (data.length > 0) {
+                    const ul = document.createElement('ul');
+
+                    data.forEach(curso => {
+                        const li = document.createElement('li');
+                        li.textContent = curso.nombre_curso;
+                        li.dataset.id = curso.id;
+
+                        li.style.cursor = 'pointer';
+                        li.style.padding = '8px';
+
+                        li.addEventListener('click', function () {
+                            agregarCursoSeleccionado(curso);
+                            listaCursos.innerHTML = '';
+                            inputCurso.value = '';
+                        });
+
+                        ul.appendChild(li);
+                    });
+
+                    listaCursos.appendChild(ul);
+                }
+            });
+    });
+
+    // AGREGAR CURSO
+    function agregarCursoSeleccionado(curso) {
+
+        const existe = selectedCursos.querySelector(`input[value="${curso.id}"]`);
+        if (existe) return;
+
+        const cont = document.createElement('div');
+        cont.classList.add('chip');
+
+        const span = document.createElement('span');
+        span.textContent = curso.nombre_curso;
+
+        const inputHidden = document.createElement('input');
+        inputHidden.type = 'hidden';
+        inputHidden.name = 'cursos[]';
+        inputHidden.value = curso.id;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'x';
+
+        btn.onclick = () => cont.remove();
+
+        cont.appendChild(span);
+        cont.appendChild(inputHidden);
+        cont.appendChild(btn);
+
+        selectedCursos.appendChild(cont);
+    }
+
 });
 </script>
 

@@ -120,6 +120,14 @@
                                     class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                     <ion-icon name="calendar-outline"></ion-icon> Reservas
                                 </a></li>
+                            <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                            <li><a href="table_equipment_reports.php"
+                                    class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                    <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
+                                </a></li>
                         </ul>
                     </div>
                     <div class="menu-group">
@@ -258,7 +266,7 @@
 
                             <div class="form-group">
                                 <label for="correo">Correo Electrónico</label>
-                                <input autocomplete="off" type="text" id="correo" placeholder="Correo Electrónico"
+                                <input autocomplete="off" type="email" id="correo" placeholder="Correo Electrónico"
                                     name="correo" required>
                             </div>
 

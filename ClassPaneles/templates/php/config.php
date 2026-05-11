@@ -84,8 +84,25 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
                                 class="<?php echo $currentFile == '../views/Admin/reservar_espacio.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
                             </a></li>
+                        <li><a href="../views/Admin/asistencias_docente.php"
+                                class="<?php echo $currentFile == '../views/Admin/asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="../views/Admin/table_equipment_reports.php"
+                                class="<?php echo $currentFile == '../views/Admin/table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
+                            </a></li>
                     </ul>
                 </div>
+                <div class="menu-group">
+                        <p class="menu-title">Mensajeria</p>
+                        <ul>
+                            <li><a href="../views/Admin/messages.php"
+                                    class="<?php echo $currentFile == '../views/Admin/messages.php' ? 'active' : ''; ?>">
+                                    <ion-icon name="calendar-outline"></ion-icon> Buzon ayuda
+                                </a></li>
+                        </ul>
+                    </div>
                 <div class="menu-group">
                     <p class="menu-title">Configuración</p>
                     <ul>

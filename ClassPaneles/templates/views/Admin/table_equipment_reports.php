@@ -72,6 +72,14 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                                 class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
                             </a></li>
+                        <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="table_equipment_reports.php"
+                                class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
+                            </a></li>
                     </ul>
                 </div>
                 <div class="menu-group">
@@ -126,6 +134,8 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                         <th>EQUIPAMIENTO</th>
                         <th>DESCRIPCIÓN</th>
                         <th>ESPACIO</th>
+                        <th>EDIFICIO</th>
+                        <th>ESTADO</th>
                         <th>FECHA REPORTE</th>
                         <th>ACCIÓN</th>
                     </tr>
@@ -142,17 +152,18 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                     LEFT JOIN espacios_academicos ea ON re.espacio_id = ea.id
                     WHERE re.estado = 'Disponible'";*/
 
-                    $query= "SELECT re.*, us.nombre_completo, eq.nombre AS nombre_equipamiento, ea.codigo AS espacio
+                    $query= "SELECT re.*, us.nombre_completo, eq.nombre AS nombre_equipamiento, ea.codigo AS espacio, ed.nombre AS edificio
                     FROM solicitudes_reporte_docente re
                     LEFT JOIN usuarios us ON re.id_usuario = us.id
                     LEFT JOIN espacios_equipamiento ee ON re.espacio_equipamiento_id = ee.id
                     LEFT JOIN equipamiento eq ON ee.equipamiento_id = eq.id
                     LEFT JOIN espacios_academicos ea ON ee.espacio_id = ea.id
+                    LEFT JOIN edificios ed ON ea.edificio_id = ed.id
                     WHERE re.estado_solicitud = 'pendiente'";
 
                 if (!empty($search)) {
                     $query .= " AND (
-                        re.id LIKE '%$search%' OR
+                        re.id_usuario LIKE '%$search%' OR
                         us.nombre_completo LIKE '%$search%' OR
                         eq.nombre LIKE '%$search%' OR
                         re.descripcion LIKE '%$search%' OR
@@ -174,6 +185,8 @@ if (!$resultado) {
             <td>{$row['nombre_equipamiento']}</td>
             <td>{$row['descripcion']}</td>
             <td>{$row['espacio']}</td>
+            <td>{$row['edificio']}</td>
+            <td>{$row['estado']}</td>
             <td>{$row['fecha_solicitud']}</td>
             <td>
                 <div class='dropdown'>
@@ -249,6 +262,10 @@ function rechazarReporte() {
     if (motivo === "") {
         alert("Por favor, ingrese un motivo de rechazo.");
         return;
+    }
+
+    if (!confirm("¿Seguro que deseas rechazar este reporte?")) {
+        return; 
     }
 
     fetch("rechazar_reporte_equipamiento.php", {

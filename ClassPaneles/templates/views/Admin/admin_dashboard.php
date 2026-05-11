@@ -52,6 +52,7 @@ $result = $conexion->query($query);
 $queryTotalesReservas = "
     SELECT 
         COUNT(*) AS total,
+        SUM(CASE WHEN estado = 'finalizado' THEN 1 ELSE 0 END) AS finalizado,
         SUM(CASE WHEN estado = 'aceptada' THEN 1 ELSE 0 END) AS aceptadas,
         SUM(CASE WHEN estado = 'rechazada' THEN 1 ELSE 0 END) AS rechazadas,
         SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes
@@ -65,16 +66,19 @@ $totalReservas     = (int)$totales['total'];
 $totalAceptadas    = (int)$totales['aceptadas'];
 $totalRechazadas   = (int)$totales['rechazadas'];
 $totalPendientes   = (int)$totales['pendientes'];
+$totalFinalizadas  = (int)$totales['finalizado'];
 
 //PORCENTAJES
 $porcAceptadas  = $totalReservas ? round(($totalAceptadas / $totalReservas) * 100, 1) : 0;
 $porcRechazadas = $totalReservas ? round(($totalRechazadas / $totalReservas) * 100, 1) : 0;
 $porcPendientes = $totalReservas ? round(($totalPendientes / $totalReservas) * 100, 1) : 0;
+$porcFinalizadas = $totalReservas ? round(($totalFinalizadas / $totalReservas) * 100, 1) : 0;
 
 //COMPARACIÓN AÑO ANTERIOR Y ACTUAL
 $queryComparacion = "
     SELECT 
         YEAR(registro_reserva) AS anio,
+        SUM(CASE WHEN estado = 'finalizado' THEN 1 ELSE 0 END) AS finalizado,
         SUM(CASE WHEN estado = 'aceptada' THEN 1 ELSE 0 END) AS aceptadas,
         SUM(CASE WHEN estado = 'rechazada' THEN 1 ELSE 0 END) AS rechazadas,
         SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes
@@ -86,8 +90,8 @@ $queryComparacion = "
 $resultComparacion = mysqli_query($conexion, $queryComparacion);
 
 $comparacion = [
-    'actual' => ['aceptadas' => 0, 'rechazadas' => 0,'pendientes' => 0],
-    'anterior' => ['aceptadas' => 0, 'rechazadas' => 0,'pendientes' => 0]
+    'actual' => ['finalizado' => 0, 'aceptadas' => 0, 'rechazadas' => 0,'pendientes' => 0],
+    'anterior' => ['finalizado' => 0, 'aceptadas' => 0, 'rechazadas' => 0,'pendientes' => 0]
 ];
 
 while ($row = mysqli_fetch_assoc($resultComparacion)) {
@@ -360,6 +364,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
         <!-- Totales -->
         <div class="stats-row">
             <div class="stat-item-porc">Total: <strong><?= $totalReservas ?></strong></div>
+            <div class="stat-item-porc">Finalizadas: <strong><?= $totalFinalizadas ?></strong></div>
             <div class="stat-item-porc">Aceptadas: <strong><?= $totalAceptadas ?></strong></div>
             <div class="stat-item-porc">Rechazadas: <strong><?= $totalRechazadas ?></strong></div>
             <div class="stat-item-porc">Pendientes: <strong><?= $totalPendientes ?></strong></div>
@@ -367,6 +372,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
 
         <!-- Porcentajes -->
         <div class="stats-row">
+            <div class="stat-item-porc"><?= $porcFinalizadas ?>% Finalizadas</div>
             <div class="stat-item-porc"><?= $porcAceptadas ?>% Aceptadas</div>
             <div class="stat-item-porc"><?= $porcRechazadas ?>% Rechazadas</div>
             <div class="stat-item-porc"><?= $porcPendientes ?>% Pendientes</div>
@@ -474,14 +480,15 @@ $currentFile = basename($_SERVER['PHP_SELF']);
 new Chart(document.getElementById('chartActual'), {
     type: 'pie',
     data: {
-        labels: ['Aceptadas', 'Rechazadas','Pendientes'],
+        labels: ['Finalizadas','Aceptadas', 'Rechazadas','Pendientes'],
         datasets: [{
             data: [
+                <?= $comparacion['actual']['finalizado'] ?>,
                 <?= $comparacion['actual']['aceptadas'] ?>,
                 <?= $comparacion['actual']['rechazadas'] ?>,
                 <?= $comparacion['actual']['pendientes'] ?>
             ],
-            backgroundColor: ['#2ecc71', '#e74c3c','#6c757d']
+            backgroundColor: ['#cceb21','#2ecc71', '#e74c3c','#6c757d']
         }]
     },
     options: {
@@ -493,14 +500,15 @@ new Chart(document.getElementById('chartActual'), {
 new Chart(document.getElementById('chartAnterior'), {
     type: 'pie',
     data: {
-        labels: ['Aceptadas', 'Rechazadas','Pendientes'],
+        labels: ['Finalizadas','Aceptadas', 'Rechazadas','Pendientes'],
         datasets: [{
             data: [
+                <?= $comparacion['anterior']['finalizado'] ?>,
                 <?= $comparacion['anterior']['aceptadas'] ?>,
                 <?= $comparacion['anterior']['rechazadas'] ?>,
                 <?= $comparacion['anterior']['pendientes'] ?>
             ],
-            backgroundColor: ['#27ae60', '#c0392b', '#6c757d']
+            backgroundColor: ['#cceb21','#27ae60', '#c0392b', '#6c757d']
         }]
     },
     options: {

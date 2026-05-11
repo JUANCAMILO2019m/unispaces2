@@ -41,7 +41,10 @@ $sql = "SELECT m.id, u.nombre_completo AS remitente, m.mensaje, m.fecha_registro
         WHERE m.destinatario = 'admin'
         AND (m.fecha_registro LIKE '%$search%'
         OR m.nivel_prioridad LIKE '%$search%' 
-        OR m.tipo LIKE '%$search%')";
+        OR m.tipo LIKE '%$search%'
+        OR m.mensaje LIKE '%$search%'
+        OR u.nombre_completo LIKE '%$search%'
+        OR m.estado LIKE '%$search%')";
         //AND (m.respuesta IS NULL OR m.respuesta = '')"; condición para mostrar peticiones no resueltas
 $stmt = $conexion->prepare($sql);
 if (!$stmt) {
@@ -108,6 +111,14 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                         <li><a href="table_reservation.php"
                                 class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
+                            </a></li>
+                        <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="table_equipment_reports.php"
+                                class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
                             </a></li>
                     </ul>
                 </div>

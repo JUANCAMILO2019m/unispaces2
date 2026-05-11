@@ -121,6 +121,14 @@ if (isset($_GET['id'])) {
                                 class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
                             </a></li>
+                        <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="table_equipment_reports.php"
+                                class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
+                            </a></li>
                     </ul>
                 </div>
                 <div class="menu-group">
@@ -168,10 +176,23 @@ if (isset($_GET['id'])) {
                         value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>">
                     <button type="submit">Buscar</button>
                 </form>
-                <a href="#" class="create-user-button" id="openCreateUserModal">
-                    <ion-icon name="person-add-sharp"></ion-icon>
-                    Crear Estudiante
-                </a>
+                
+                <div class="action-buttons">
+                    <a href="#" class="create-user-button" id="openCreateUserModal">
+                        <ion-icon name="person-add-sharp"></ion-icon>
+                        Crear Estudiante
+                    </a>
+
+                    <a href="#" class="create-user-button" id="openCreateCourseModal">
+                        <ion-icon name="book-sharp"></ion-icon>
+                        Crear Curso
+                    </a>
+
+                    <a href="#" class="create-user-button" id="openViewCoursesModal">
+                        <ion-icon name="library-sharp"></ion-icon>
+                        Ver Cursos
+                    </a>
+                </div>
             </div>
 
             <!-- Contenedor de la tabla -->
@@ -252,6 +273,87 @@ if (isset($_GET['id'])) {
                 <?php endif; ?>
             </div>
 
+            <!-- Modal para crear curso -->
+            <div id="createCourseModal" class="modal">
+                <div class="modal-content">
+                    <div class="title_modal">
+                        <h2>Crear Nuevo Curso</h2>
+                    </div>
+
+                    <form action="register_course.php" method="POST" class="formulario_register">
+
+                        <div class="form-group">
+                            <label for="nombre_curso">Nombre del Curso:</label>
+                            <input autocomplete="off" type="text" id="nombre_curso"
+                                name="nombre_curso"
+                                placeholder="Ingrese nombre del curso"
+                                required>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button type="button" class="cancel-button" id="closeCreateCourseModal">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="submit-button">
+                                Crear
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <div id="viewCoursesModal" class="modal">
+                <div class="modal-content modal-courses">
+                    <div class="title_modal">
+                        <h2>Lista de Cursos</h2>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" id="searchCoursesModal" class="course-search" placeholder="Buscar curso...">
+                    </div>
+
+                    <div class="table-container">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>NOMBRE DEL CURSO</th>
+                                    <th>ACCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursesTableBody">
+                                <?php
+                                $queryCursosTabla = "SELECT * FROM cursos ORDER BY nombre_curso ASC";
+                                $resultadoCursosTabla = mysqli_query($conexion, $queryCursosTabla);
+
+                                while ($curso = mysqli_fetch_assoc($resultadoCursosTabla)):
+                                ?>
+                                <tr>
+                                    <td><?= $curso['id']; ?></td>
+                                    <td><?= htmlspecialchars($curso['nombre_curso']); ?></td>
+                                    <td>
+                                        <a href="delete_course.php?id=<?= $curso['id']; ?>"
+                                        class="delete-button"
+                                        onclick="return confirm('¿Eliminar este curso?');">
+                                        <ion-icon name="trash-outline"></ion-icon>
+                                        Eliminar
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="cancel-button" id="closeViewCoursesModal">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Modal para crear estudiante -->
             <div id="createUserModal" class="modal">
                 <div class="modal-content">
@@ -278,7 +380,15 @@ if (isset($_GET['id'])) {
                             <input autocomplete="off" type="text" id="identificacion" placeholder="Identificación"
                                 name="identificacion" required>
                         </div>
+                        <div class="form-group">
+                            <label>Cursos:</label>
 
+                            <div class="course-selector">
+                                <input type="text" id="courseSearch" placeholder="Buscar curso...">
+                                <div id="courseResults" class="course-results"></div>
+                                <div id="selectedCourses" class="selected-courses"></div>
+                            </div>
+                        </div>
                         <div class="profile-photo">
                             <div class="photo-circle">
                                 <img src="../../assets/images/photo.jpg" alt="Foto de perfil" id="profileImage">
@@ -306,6 +416,7 @@ if (isset($_GET['id'])) {
             <form id="updateStudentsForm" class="formulario_register" action="update_students.php" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="update_id">
                 <input type="hidden" name="correo_original" id="correo_original">
+                <input type="hidden" name="cursos_seleccionados" id="cursos_seleccionados">
                 <div class="form-group">
                     <label>Nombre Completo</label>
                     <input type="text" name="nombre_completo" id="update_nombre" required>
@@ -319,6 +430,15 @@ if (isset($_GET['id'])) {
                 <div class="form-group">
                     <label>Identificación</label>
                     <input type="text" name="identificacion" id="update_usuario" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cursos:</label>
+                    <div class="course-selector">
+                        <input type="text" id="updateCourseSearch" placeholder="Buscar curso...">
+                        <div id="updateCourseResults" class="course-results"></div>
+                        <div id="updateSelectedCourses" class="selected-courses"></div>
+                    </div>
                 </div>
 
                 <div class="profile-photo">
@@ -361,6 +481,20 @@ if (isset($_GET['id'])) {
         });
         </script>
     <?php endif; ?>
+    <script>
+        const cursosDisponibles = <?php
+            $queryCursos = "SELECT id, nombre_curso FROM cursos ORDER BY nombre_curso ASC";
+            $resultadoCursos = mysqli_query($conexion, $queryCursos);
+
+            $cursosArray = [];
+
+            while ($curso = mysqli_fetch_assoc($resultadoCursos)) {
+                $cursosArray[] = $curso;
+            }
+
+            echo json_encode($cursosArray);
+        ?>;
+    </script>
 </body>
 
 </html>

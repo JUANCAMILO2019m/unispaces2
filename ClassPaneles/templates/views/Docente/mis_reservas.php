@@ -35,7 +35,8 @@ AND NOW() BETWEEN fecha_inicio AND fecha_final
 ";
 
 mysqli_query($conexion, $queryUpdateEstado);
-
+// Búsqueda de reservas
+$search = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
 // Obtener las reservas del usuario
 $query = "SELECT r.id, r.fecha_inicio, r.fecha_final, r.tipo_reservacion, r.estado,e.codigo AS espacio, ed.nombre AS nombre_edificio
@@ -43,6 +44,15 @@ $query = "SELECT r.id, r.fecha_inicio, r.fecha_final, r.tipo_reservacion, r.esta
         JOIN espacios_academicos e ON r.id_espacio = e.id
         LEFT JOIN edificios ed ON e.edificio_id = ed.id
         WHERE r.id_usuario = '$id_usuario'
+        AND (
+                r.id LIKE '%$search%' OR
+                r.tipo_reservacion LIKE '%$search%' OR
+                r.estado LIKE '%$search%' OR
+                e.codigo LIKE '%$search%' OR
+                ed.nombre LIKE '%$search%' OR
+                DATE_FORMAT(r.fecha_inicio, '%d/%m/%Y') LIKE '%$search%' OR
+                DATE_FORMAT(r.fecha_final, '%d/%m/%Y') LIKE '%$search%'
+        )
         ORDER BY r.fecha_inicio DESC
         LIMIT $offset, $registros_por_pagina";
 
@@ -51,9 +61,6 @@ $resultado = mysqli_query($conexion, $query);
 if (!$resultado) {
     die("Error al obtener los datos: " . mysqli_error($conexion));
 }
-
-// Búsqueda de reservas
-$search = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
     $id_reserva = $_POST['id'];
@@ -167,7 +174,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
         </aside>
 
         <main class="main-content-cuenta">
-            <h1 class="title-table">Lista de Edificios</h1>
+            <h1 class="title-table">Lista de Reservas</h1>
             <!-- Barra de búsqueda -->
             <div class="search-and-create">
                 <form method="GET" action="mis_reservas.php" class="search-form">
@@ -231,18 +238,49 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                 </tbody>
             </table>
         </div>
-        <div class="pagination">
+       <div class="pagination">
             <?php if ($pagina_actual > 1): ?>
                 <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
-                    class="pagination-button">Anterior</a>
+                class="pagination-button">Anterior</a>
             <?php endif; ?>
-            <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+
+            <?php
+            $rango = 2; // Cantidad de páginas antes y después de la actual
+            $inicio = max(1, $pagina_actual - $rango);
+            $fin = min($total_paginas, $pagina_actual + $rango);
+
+            // Primera página
+            if ($inicio > 1) {
+                echo '<a href="?pagina=1&buscar=' . htmlspecialchars($search) . '" class="pagination-button">1</a>';
+
+                if ($inicio > 2) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+            }
+
+            // Páginas centrales
+            for ($i = $inicio; $i <= $fin; $i++):
+            ?>
                 <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
-                    class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
             <?php endfor; ?>
+
+            <?php
+            // Última página
+            if ($fin < $total_paginas) {
+                if ($fin < $total_paginas - 1) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+
+                echo '<a href="?pagina=' . $total_paginas . '&buscar=' . htmlspecialchars($search) . '" class="pagination-button">' . $total_paginas . '</a>';
+            }
+            ?>
+
             <?php if ($pagina_actual < $total_paginas): ?>
                 <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
-                    class="pagination-button">Siguiente</a>
+                class="pagination-button">Siguiente</a>
             <?php endif; ?>
         </div>
 </main>

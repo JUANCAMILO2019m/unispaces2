@@ -14,18 +14,34 @@ $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $offset = ($pagina_actual - 1) * $registros_por_pagina;
 
 $search_reserva = isset($_GET['buscar']) ? $_GET['buscar'] : '';
+$asistio = isset($_GET['asistio']) ? $_GET['asistio'] : '';
 
+// Condición adicional para el filtro
+$filtro_asistio = '';
+if ($asistio !== '') {
+    $valor = (int)$asistio; 
+    $filtro_asistio = "AND ar.asistio = $valor";
+}
+
+$where = "
+    (
+        e.nombre_completo LIKE '%$search_reserva%' 
+        OR r.descripcion LIKE '%$search_reserva%'
+        OR ar.id_reservacion LIKE '%$search_reserva%'
+        OR ar.id_estudiante LIKE '%$search_reserva%'
+    )
+    AND r.id_usuario = '$id_usuario'
+    $filtro_asistio
+";
 /* TOTAL DE REGISTROS */
 $query_total = "
-    SELECT COUNT(*) as total
-    FROM asistencia_reservas ar
-    LEFT JOIN estudiantes e ON ar.id_estudiante = e.id
-    LEFT JOIN reservaciones r ON ar.id_reservacion = r.id
-    WHERE (
-    e.nombre_completo LIKE '%$search_reserva%' 
-    OR r.descripcion LIKE '%$search_reserva%'
-)
+SELECT COUNT(*) as total
+FROM asistencia_reservas ar
+LEFT JOIN estudiantes e ON ar.id_estudiante = e.id
+LEFT JOIN reservaciones r ON ar.id_reservacion = r.id
+WHERE $where
 AND r.id_usuario = '$id_usuario'
+$filtro_asistio
 ";
 
 $resultado_total = mysqli_query($conexion, $query_total);
@@ -42,6 +58,7 @@ $total_paginas = ceil($total_reservas / $registros_por_pagina);
 $query = "
     SELECT 
         ar.id,
+        ar.id_estudiante,
         ar.id_reservacion,
         ar.fecha_registro,
         ar.asistio,
@@ -52,14 +69,14 @@ $query = "
     FROM asistencia_reservas ar
     LEFT JOIN estudiantes e ON ar.id_estudiante = e.id
     LEFT JOIN reservaciones r ON ar.id_reservacion = r.id
-    WHERE (
-    e.nombre_completo LIKE '%$search_reserva%' 
-    OR r.descripcion LIKE '%$search_reserva%'
-)
+    WHERE $where
 AND r.id_usuario = '$id_usuario'
+$filtro_asistio
     ORDER BY ar.fecha_registro DESC
     LIMIT $offset, $registros_por_pagina
 ";
+
+$asistio = isset($_GET['asistio']) ? $_GET['asistio'] : '';
 
 $resultado = mysqli_query($conexion, $query);
 
@@ -169,6 +186,15 @@ $currentFile = basename($_SERVER['PHP_SELF']);
 <form method="GET" class="search-form">
 <input type="text" name="buscar" placeholder="Buscar estudiante o reserva..."
 value="<?php echo htmlspecialchars($search_reserva); ?>">
+<select name="asistio">
+        <option value="">Todas</option>
+        <option value="1" <?php if(isset($_GET['asistio']) && $_GET['asistio']=="1") echo "selected"; ?>>
+            Sí
+        </option>
+        <option value="0" <?php if(isset($_GET['asistio']) && $_GET['asistio']=="0") echo "selected"; ?>>
+            No
+        </option>
+    </select>
 <button type="submit">Buscar</button>
 </form>
 </div>
@@ -195,7 +221,7 @@ value="<?php echo htmlspecialchars($search_reserva); ?>">
 
 <tr>
 <td><?php echo $fila['id_reservacion']; ?></td>
-<td><?php echo $fila['id']; ?></td>
+<td><?php echo $fila['id_estudiante']; ?></td>
 <td><?php echo htmlspecialchars($fila['estudiante']); ?></td>
 <td><?php echo htmlspecialchars($fila['descripcion']); ?></td>
 <td><?php echo $fila['fecha_inicio']; ?></td>
@@ -210,18 +236,49 @@ value="<?php echo htmlspecialchars($search_reserva); ?>">
 </table>
 </div>
 
-        <div class="pagination">
+<div class="pagination">
             <?php if ($pagina_actual > 1): ?>
-                <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button">Anterior</a>
+                <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>&asistio=<?php echo htmlspecialchars($asistio); ?>"
+                class="pagination-button">Anterior</a>
             <?php endif; ?>
-            <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-                <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>"><?php echo $i; ?></a>
+
+            <?php
+            $rango = 2; // Cantidad de páginas antes y después de la actual
+            $inicio = max(1, $pagina_actual - $rango);
+            $fin = min($total_paginas, $pagina_actual + $rango);
+
+            // Primera página
+            if ($inicio > 1) {
+                echo '<a href="?pagina=1&buscar=' . htmlspecialchars($search_reserva) . '&asistio=' . htmlspecialchars($asistio) . '" class="pagination-button">1</a>';
+
+                if ($inicio > 2) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+            }
+
+            // Páginas centrales
+            for ($i = $inicio; $i <= $fin; $i++):
+            ?>
+                <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>&asistio=<?php echo htmlspecialchars($asistio); ?>"
+                class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
             <?php endfor; ?>
+
+            <?php
+            // Última página
+            if ($fin < $total_paginas) {
+                if ($fin < $total_paginas - 1) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+
+                echo '<a href="?pagina=' . $total_paginas . '&buscar=' . htmlspecialchars($search_reserva) . '&asistio=' . htmlspecialchars($asistio) . '" class="pagination-button">' . $total_paginas . '</a>';
+            }
+            ?>
+
             <?php if ($pagina_actual < $total_paginas): ?>
-                <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button">Siguiente</a>
+                <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>&asistio=<?php echo htmlspecialchars($asistio); ?>"
+                class="pagination-button">Siguiente</a>
             <?php endif; ?>
         </div>
 

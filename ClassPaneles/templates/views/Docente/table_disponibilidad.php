@@ -25,6 +25,9 @@ $total_paginas = ceil($total_reservas / $registros_por_pagina);
 
 $search_reserva = isset($_GET['buscar']) ? $_GET['buscar'] : '';
 
+$hora_inicio_filtro = $_GET['hora_inicio'] ?? '';
+$hora_fin_filtro = $_GET['hora_fin'] ?? '';
+
 // Consulta para obtener espacios académicos
 $query = "
     SELECT ea.id, ea.codigo, ea.tipo_espacio, ea.imagen, ed.nombre AS edificio_nombre
@@ -201,11 +204,13 @@ function formatearHora($hora) {
 
     <main class="main-content-cuenta">
         <h1 class="title-table">Lista de disponibilidad</h1>
-        <div class="search-and-create">
-                <form method="GET" action="table_disponibilidad.php" class="search-form">
+        <div class="search-and-create disponibilidad-search">
+                <form method="GET" action="table_disponibilidad.php" class="search-form disponibilidad-form">
                     <ion-icon name="search-outline" class="search-icon"></ion-icon>
                     <input type="text" id="search-input" name="buscar" placeholder="Buscar edificio..."
                         value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>">
+                    <input type="time" name="hora_inicio" value="<?php echo $_GET['hora_inicio'] ?? ''; ?>">
+                    <input type="time" name="hora_fin" value="<?php echo $_GET['hora_fin'] ?? ''; ?>">
                     <button type="submit">Buscar</button>
                 </form>
             </div>
@@ -243,7 +248,47 @@ function formatearHora($hora) {
                         <?php
                             // Calcular disponibilidad en bloques
                             $disponibilidad = calcularBloquesDisponibilidad($conexion, $fila['id'], $horarioDia);
+                            $mostrar = true;
+
+                            if (!empty($hora_inicio_filtro) && !empty($hora_fin_filtro)) {
+
+                        $inicio_filtro = strtotime($hora_inicio_filtro);
+                        $fin_filtro = strtotime($hora_fin_filtro);
+
+                        if ($inicio_filtro < $fin_filtro) {
+
+                            $disponibilidad_limpia = str_replace('<br>', ',', $disponibilidad);
+                            $bloques = explode(',', $disponibilidad_limpia);
+
+                            $coincide = false;
+
+                            foreach ($bloques as $bloque) {
+
+                                preg_match('/(\d{1,2}:\d{2}\s*(AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(AM|PM))/', trim($bloque), $match);
+
+                                if ($match) {
+
+                                    $inicio_bloque = strtotime($match[1]);
+                                    $fin_bloque = strtotime($match[3]);
+
+                                    // Verifica que el rango solicitado esté dentro del bloque disponible
+                                    if ($inicio_filtro >= $inicio_bloque && $fin_filtro <= $fin_bloque) {
+                                        $coincide = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (!$coincide) {
+                                $mostrar = false;
+                            }
+
+                        } else {
+                            $mostrar = false;
+                        }
+                    }
                         ?>
+                        <?php if ($mostrar): ?>
                         <tr>
                             <td>
                                 <img src="<?php echo htmlspecialchars($fila['imagen']); ?>" alt="Imagen de <?php echo htmlspecialchars($fila['codigo']); ?>" class="user-image">
@@ -253,6 +298,7 @@ function formatearHora($hora) {
                             <td><?php echo htmlspecialchars($fila['edificio_nombre']); ?></td>
                             <td><?php echo nl2br($disponibilidad); ?></td>
                         </tr>
+                        <?php endif; ?>
                     <?php endwhile; ?>
                 </tbody>
             </table>
@@ -260,15 +306,46 @@ function formatearHora($hora) {
         <div class="pagination">
             <?php if ($pagina_actual > 1): ?>
                 <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button">Anterior</a>
+                class="pagination-button">Anterior</a>
             <?php endif; ?>
-            <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+
+            <?php
+            $rango = 2; // Cantidad de páginas antes y después de la actual
+            $inicio = max(1, $pagina_actual - $rango);
+            $fin = min($total_paginas, $pagina_actual + $rango);
+
+            // Primera página
+            if ($inicio > 1) {
+                echo '<a href="?pagina=1&buscar=' . htmlspecialchars($search_reserva) . '" class="pagination-button">1</a>';
+
+                if ($inicio > 2) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+            }
+
+            // Páginas centrales
+            for ($i = $inicio; $i <= $fin; $i++):
+            ?>
                 <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>"><?php echo $i; ?></a>
+                class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
             <?php endfor; ?>
+
+            <?php
+            // Última página
+            if ($fin < $total_paginas) {
+                if ($fin < $total_paginas - 1) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+
+                echo '<a href="?pagina=' . $total_paginas . '&buscar=' . htmlspecialchars($search_reserva) . '" class="pagination-button">' . $total_paginas . '</a>';
+            }
+            ?>
+
             <?php if ($pagina_actual < $total_paginas): ?>
                 <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search_reserva); ?>"
-                    class="pagination-button">Siguiente</a>
+                class="pagination-button">Siguiente</a>
             <?php endif; ?>
         </div>
     </main>

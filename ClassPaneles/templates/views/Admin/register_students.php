@@ -1,40 +1,87 @@
 <?php
 require_once '../../php/conexion_be.php';
-include '../../php/admin_session.php'; // Verifica que el admin esté autenticado
+include '../../php/admin_session.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $nombre_completo = mysqli_real_escape_string($conexion, $_POST['nombre_completo']);
     $correo = mysqli_real_escape_string($conexion, $_POST['correo']);
     $identificacion = mysqli_real_escape_string($conexion, $_POST['identificacion']);
 
-    // Manejo de la imagen
-    $imagen = null;
-    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $nombre_imagen = $_FILES['imagen']['name'];
-        $ruta_temp = $_FILES['imagen']['tmp_name'];
-        $directorio_destino = "../../uploads/estudiantes/";
+    // 🔥 IMPORTANTE: cursos seleccionados
+    $cursos = $_POST['cursos'] ?? [];
 
-        // Asegurarse de que el directorio exista
-        if (!file_exists($directorio_destino)) {
-            mkdir($directorio_destino, 0777, true);
+    // =========================
+    // VALIDACIONES
+    // =========================
+    $verificar_correo = mysqli_query($conexion, "SELECT id FROM estudiantes WHERE correo='$correo'");
+    if (mysqli_num_rows($verificar_correo) > 0) {
+        echo "<script>alert('Correo ya registrado'); window.location='vista_students.php';</script>";
+        exit();
+    }
+
+    $verificar_id = mysqli_query($conexion, "SELECT id FROM estudiantes WHERE identificacion='$identificacion'");
+    if (mysqli_num_rows($verificar_id) > 0) {
+        echo "<script>alert('Identificación ya registrada'); window.location='vista_students.php';</script>";
+        exit();
+    }
+
+    // =========================
+    // IMAGEN
+    // =========================
+    $imagen = null;
+
+    if (!empty($_FILES['imagen']['name'])) {
+
+        $directorio = "../../uploads/estudiantes/";
+
+        if (!file_exists($directorio)) {
+            mkdir($directorio, 0777, true);
         }
 
-        $ruta_imagen = $directorio_destino . uniqid() . "_" . basename($nombre_imagen);
+        $nombre_img = uniqid() . "_" . basename($_FILES['imagen']['name']);
+        $ruta = $directorio . $nombre_img;
 
-        if (move_uploaded_file($ruta_temp, $ruta_imagen)) {
-            $imagen = $ruta_imagen;
-        } else {
-            echo "<script>alert('Error al subir la imagen.');</script>";
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $ruta)) {
+            $imagen = $ruta;
         }
     }
-    // Insertar estudiante
+
+    // =========================
+    // INSERT ESTUDIANTE (SOLO UNA VEZ)
+    // =========================
     $query = "INSERT INTO estudiantes (nombre_completo, correo, identificacion, imagen)
-        VALUES ('$nombre_completo', '$correo', '$identificacion', '$imagen')";
+              VALUES ('$nombre_completo', '$correo', '$identificacion', '$imagen')";
 
     if (mysqli_query($conexion, $query)) {
-        echo "<script>alert('Estudiante registrado con éxito.'); window.location.href='vista_students.php';</script>";
+
+        // 🔥 ID del estudiante creado
+        $estudiante_id = mysqli_insert_id($conexion);
+
+        // =========================
+        // INSERT CURSOS
+        // =========================
+        if (!empty($cursos)) {
+            foreach ($cursos as $curso_id) {
+
+                $curso_id = (int)$curso_id;
+
+                $queryRel = "INSERT INTO cursos_estudiantes (estudiante_id, curso_id)
+                            VALUES ($estudiante_id, $curso_id)";
+
+                mysqli_query($conexion, $queryRel);
+            }
+        }
+
+        echo "<script>
+            alert('Estudiante registrado correctamente');
+            window.location='vista_students.php';
+        </script>";
+
     } else {
-        echo "<script>alert('Error al registrar estudiante: " . mysqli_error($conexion) . "');</script>";
+        echo "<script>
+            alert('Error al registrar estudiante');
+        </script>";
     }
 }
 ?>

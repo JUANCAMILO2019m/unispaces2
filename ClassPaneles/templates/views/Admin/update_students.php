@@ -26,5 +26,27 @@ if (mysqli_num_rows($resultado_usuario) === 0) {
 
 include '../../php/update_table_students.php';
 
+/* ===============================
+ACTUALIZAR CURSOS DEL ESTUDIANTE
+=============================== */
+
+$cursosSeleccionados = json_decode($_POST['cursos_seleccionados'], true);
+
+// Eliminar cursos anteriores
+mysqli_query($conexion, "DELETE FROM cursos_estudiantes WHERE estudiante_id = $id");
+
+// Insertar nuevos cursos
+if (!empty($cursosSeleccionados)) {
+    foreach ($cursosSeleccionados as $cursoId) {
+        $cursoId = (int)$cursoId;
+
+        mysqli_query(
+            $conexion,
+            "INSERT INTO cursos_estudiantes (estudiante_id, curso_id)
+            VALUES ($id, $cursoId)"
+        );
+    }
+}
+
 header("Location: vista_students.php?update=success");
 exit();

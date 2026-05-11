@@ -491,7 +491,7 @@ body {
 
 /* Estilo del input */
 .search-form input {
-    width: 100%;
+    width: 150%;
     padding: 12px 16px 12px 45px; /* Espacio a la izquierda para el icono */
     border: 1px solid #e5e7eb;
     border-radius: 15px;
@@ -519,6 +519,27 @@ body {
     align-items: center;
 }
 
+/*campo de busqueda solo para disponibilidad*/
+
+.disponibilidad-form {
+    width: 100%;
+    max-width: 950px;
+}
+
+.disponibilidad-form #search-input {
+    flex: 2.5;
+    min-width: 320px;
+    width: auto;
+}
+
+.disponibilidad-form input[type="time"] {
+    flex: 1;
+}
+
+.disponibilidad-form button {
+    padding: 12px 24px;
+}
+/*--------------------------------------*/
 .search-icon {
     position: absolute;
     left: 16px;
@@ -2108,4 +2129,40 @@ input:checked + .slider::before {
     font-size: 0.85rem;
     text-align: center;
     font-weight: 500;
+}
+/*cursos en reservas*/
+#selected-cursos .chip {
+    display: inline-flex;
+    align-items: center;
+    background: #e0e0e0;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin: 5px;
+}
+
+#selected-cursos .chip button {
+    margin-left: 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/*cursos buscador en ver cursos*/
+.course-search {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.course-search input:focus {
+    outline: none;
+    border-color: #1f8f7c;
+    box-shadow: 0 0 0 3px rgba(31, 143, 124, 0.1);
+}
+
+#viewCoursesModal .delete-button {
+    text-decoration: none;
 }
