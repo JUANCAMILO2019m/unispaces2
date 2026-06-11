@@ -9,9 +9,29 @@ $resultUsuarios = mysqli_query($conexion, $queryUsuarios);
 $totalReservas = mysqli_fetch_assoc($resultUsuarios)['total_reservas'];
 
 // Consulta para obtener el total de estudiantes
-$queryEstudiantes = "SELECT COUNT(*) AS total_estudiantes FROM estudiantes";    
-$resultEstudiantes = mysqli_query($conexion, $queryEstudiantes);
-$totalEstudiantes = mysqli_fetch_assoc($resultEstudiantes)['total_estudiantes'];
+date_default_timezone_set('America/Bogota');
+$fechaActual = date('Y-m-d');
+
+$queryReservasHoy = "
+SELECT 
+    r.id,
+    r.estado,
+    r.fecha_inicio,
+    r.fecha_final,
+    ea.codigo AS espacio,
+    e.codigo AS edificio
+FROM reservaciones r
+INNER JOIN espacios_academicos ea ON r.id_espacio = ea.id
+INNER JOIN edificios e ON ea.edificio_id = e.id
+WHERE r.id_usuario = '$id_usuario'
+AND r.estado IN ('aceptada', 'asistencia')
+AND DATE(r.fecha_inicio) = '$fechaActual'
+ORDER BY r.fecha_inicio ASC
+";
+
+$resultReservasHoy = mysqli_query($conexion, $queryReservasHoy);
+
+$totalReservasHoy = mysqli_num_rows($resultReservasHoy);
 
 $mesActual = date('m');
 $anioActual = date('Y');
@@ -186,9 +206,65 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                     <h3>Cantidad de reservas</h3>
                     <p><?php echo $totalReservas; ?></p>
                 </div>
-                <div class="stat-card">
-                    <h3>Estudiantes en el Sistema</h3>
-                    <p><?php echo $totalEstudiantes; ?></p>
+                <div class="stat-card reservas-hoy-card">
+                    <h3>Reservas Programadas para Hoy</h3>
+
+                    <?php if(mysqli_num_rows($resultReservasHoy) > 0): ?>
+
+                        <div class="reservas-lista">
+
+                        <?php
+                        mysqli_data_seek($resultReservasHoy, 0);
+
+                        while($reserva = mysqli_fetch_assoc($resultReservasHoy)):
+                        ?>
+
+                            <div class="reserva-item <?php echo ($reserva['estado'] == 'asistencia') ? 'reserva-asistencia' : ''; ?>"
+                            onclick="window.location.href='<?php echo ($reserva['estado'] == 'asistencia')
+                            ? "tomar_asistencia.php?id=".$reserva['id']
+                            : "update_reservation.php?id=".$reserva['id']; ?>'">
+                            <?php if($reserva['estado'] == 'asistencia'): ?>
+                                <div class="badge-asistencia">
+                                    Asistencia
+                                </div>
+                            <?php endif; ?>
+                                <div class="reserva-bloque reserva-id">
+                                    <span class="titulo">Reserva</span>
+                                    <span>#<?php echo $reserva['id']; ?></span>
+                                </div>
+                                <div class="reserva-bloque">
+                                    <span class="titulo">Inicio</span>
+                                    <span><?php echo date('h:i A', strtotime($reserva['fecha_inicio'])); ?></span>
+                                </div>
+
+                                <div class="reserva-bloque">
+                                    <span class="titulo">Fin</span>
+                                    <span><?php echo date('h:i A', strtotime($reserva['fecha_final'])); ?></span>
+                                </div>
+
+                                <div class="reserva-bloque">
+                                    <span class="titulo">Espacio</span>
+                                    <span><?php echo $reserva['espacio']; ?></span>
+                                </div>
+
+                                <div class="reserva-bloque">
+                                    <span class="titulo">Edificio</span>
+                                    <span><?php echo $reserva['edificio']; ?></span>
+                                </div>
+
+                            </div>
+
+                        <?php endwhile; ?>
+
+                        </div>
+
+                    <?php else: ?>
+
+                        <div class="sin-reservas">
+                            No tienes reservas aceptadas para hoy.
+                        </div>
+
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="charts-container">       
@@ -198,7 +274,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                 </div>
 
                 <div class="chart-small">
-                    <h3>Aulas Más Utilizadas</h3>
+                    <h3>Aulas Más Utilizadas Por Cantidad de Reservas</h3>
                     <canvas id="chartAulas"></canvas>
                 </div>
                 <div class="chart-small">

@@ -196,7 +196,8 @@ body {
 
 .content-stadistic{
     display: flex;
-    width: 100%;
+    width: 97%;
+    gap: 2%;
     justify-content:space-around;
 }
 .stats-admin {
@@ -321,7 +322,6 @@ body {
     margin-top: 30px;
 }
 
-
 /* Cada item */
 .reporte-item {
     display: flex;
@@ -402,7 +402,7 @@ body {
 
 /* Ajustes para la lista */
 .list-container {
-    width: 400px;
+    width: 450px;
     max-height: 250px;
     overflow-y: auto;
     border: 1px;
@@ -1662,7 +1662,7 @@ h2 {
     border-radius: 25px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 98%;
+    width: 95.5%;
     height: 100%;
     box-sizing: border-box;
     grid-column: 1;
@@ -2165,4 +2165,174 @@ input:checked + .slider::before {
 
 #viewCoursesModal .delete-button {
     text-decoration: none;
+}
+
+/*Reservas de hoy dashboard*/
+.reservas-hoy-card{
+    height:200px;
+    text-align: center;
+    display:flex;
+    flex-direction:column;
+}
+
+.reservas-lista{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:15px;
+
+    max-height:300px; /* Ajusta la altura */
+    overflow-y:auto;
+    padding-right:5px;
+}
+
+.reserva-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#eef7f6;
+    border:1px solid #d5e8e6;
+    border-radius:12px;
+    padding:15px;
+    cursor:pointer;
+    transition:0.3s;
+    position: relative;
+}
+
+.reserva-item:hover{
+    background:#dff1ef;
+    transform:translateY(-2px);
+}
+
+.reserva-asistencia{
+    background: #fff4cc !important;
+    border: 2px solid #ffc107;
+}
+
+.reserva-asistencia:hover{
+    background: #ffe69c !important;
+}
+
+.badge-asistencia{
+    position:absolute;
+    top:-10px;
+    left:12px;
+
+    background:#ffc107;
+    color:#000;
+
+    padding:4px 12px;
+    border-radius:15px;
+
+    font-size:12px;
+    font-weight:700;
+
+    box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+.reserva-bloque{
+    display:flex;
+    flex-direction:column;
+    text-align:center;
+    min-width:80px;
+}
+
+.reserva-bloque .titulo{
+    font-size:12px;
+    color:#6c757d;
+    margin-bottom:4px;
+    text-transform:uppercase;
+}
+
+.reserva-bloque span:last-child{
+    font-size:15px;
+    color:#10646c;
+}
+
+.sin-reservas{
+    margin-top:20px;
+    padding:15px;
+    background:#eef7f6;
+    border-radius:10px;
+    text-align:center;
+    color:#666;
+}
+/*scroll vertical*/
+.reservas-lista::-webkit-scrollbar{
+    width:8px;
+}
+
+.reservas-lista::-webkit-scrollbar-track{
+    background:#e8f3f2;
+    border-radius:10px;
+}
+
+.reservas-lista::-webkit-scrollbar-thumb{
+    background:#10646c;
+    border-radius:10px;
+}
+
+.reservas-lista::-webkit-scrollbar-thumb:hover{
+    background:#0c4f55;
+}
+/*estilos para dashboard registros reservas*/
+.reservas-resumen{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:15px;
+    margin:20px 0;
+}
+
+.card-reserva{
+    background:#f8f9fa;
+    border-radius:15px;
+    padding:15px;
+    text-align:center;
+    transition:.3s;
+    border:1px solid #e5e7eb;
+}
+
+.card-reserva:hover{
+    transform:translateY(-3px);
+}
+
+.titulo-card{
+    display:block;
+    font-size:14px;
+    font-weight:600;
+    color:#6b7280;
+    margin-bottom:8px;
+}
+
+.valor-card{
+    display:block;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+.porcentaje-card{
+    display:block;
+    font-size:14px;
+    color:#6b7280;
+}
+
+.total{
+    border-top:5px solid #3498db;
+}
+
+.finalizadas{
+    border-top:5px solid #cceb21;
+}
+
+.aceptadas{
+    border-top:5px solid #2ecc71;
+}
+
+.rechazadas{
+    border-top:5px solid #e74c3c;
+}
+
+.pendientes{
+    border-top:5px solid #6c757d;
 }

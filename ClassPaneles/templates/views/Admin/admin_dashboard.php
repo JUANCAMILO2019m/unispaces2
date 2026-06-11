@@ -362,21 +362,39 @@ $currentFile = basename($_SERVER['PHP_SELF']);
         <h3 class='tit-reserv'>Reservas Registradas</h3>
 
         <!-- Totales -->
-        <div class="stats-row">
-            <div class="stat-item-porc">Total: <strong><?= $totalReservas ?></strong></div>
-            <div class="stat-item-porc">Finalizadas: <strong><?= $totalFinalizadas ?></strong></div>
-            <div class="stat-item-porc">Aceptadas: <strong><?= $totalAceptadas ?></strong></div>
-            <div class="stat-item-porc">Rechazadas: <strong><?= $totalRechazadas ?></strong></div>
-            <div class="stat-item-porc">Pendientes: <strong><?= $totalPendientes ?></strong></div>
+        <div class="reservas-resumen">
+
+        <div class="card-reserva total">
+            <span class="titulo-card">Total</span>
+            <span class="valor-card"><?= $totalReservas ?></span>
+            <span class="porcentaje-card">100%</span>
         </div>
 
-        <!-- Porcentajes -->
-        <div class="stats-row">
-            <div class="stat-item-porc"><?= $porcFinalizadas ?>% Finalizadas</div>
-            <div class="stat-item-porc"><?= $porcAceptadas ?>% Aceptadas</div>
-            <div class="stat-item-porc"><?= $porcRechazadas ?>% Rechazadas</div>
-            <div class="stat-item-porc"><?= $porcPendientes ?>% Pendientes</div>
+        <div class="card-reserva finalizadas">
+            <span class="titulo-card">Finalizadas</span>
+            <span class="valor-card"><?= $totalFinalizadas ?></span>
+            <span class="porcentaje-card"><?= $porcFinalizadas ?>%</span>
         </div>
+
+        <div class="card-reserva aceptadas">
+            <span class="titulo-card">Aceptadas</span>
+            <span class="valor-card"><?= $totalAceptadas ?></span>
+            <span class="porcentaje-card"><?= $porcAceptadas ?>%</span>
+        </div>
+
+        <div class="card-reserva rechazadas">
+            <span class="titulo-card">Rechazadas</span>
+            <span class="valor-card"><?= $totalRechazadas ?></span>
+            <span class="porcentaje-card"><?= $porcRechazadas ?>%</span>
+        </div>
+
+        <div class="card-reserva pendientes">
+            <span class="titulo-card">Pendientes</span>
+            <span class="valor-card"><?= $totalPendientes ?></span>
+            <span class="porcentaje-card"><?= $porcPendientes ?>%</span>
+        </div>
+
+    </div>
 
         <!-- Gráfica pastel-->
         <div class="charts-pie-container">
@@ -400,7 +418,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
 
 <div class="reportes-box">
 
-    <h3 class="titulo-box">Reportes de Equipamiento</h3>
+    <h3 class="titulo-box">Ultimos Reportes de Equipamiento</h3>
 
     <div class="reportes-lista">
 
