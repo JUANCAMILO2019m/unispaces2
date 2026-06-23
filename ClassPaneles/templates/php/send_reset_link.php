@@ -18,7 +18,8 @@ $verificar_correo = mysqli_query($conexion, "SELECT * FROM usuarios WHERE correo
 
 if ($verificar_correo && mysqli_num_rows($verificar_correo) > 0) {
     // Generar un token de recuperación
-    $token = bin2hex(random_bytes(50));
+    //$token = bin2hex(random_bytes(50));
+    $token = bin2hex(random_bytes(32));
     $expira = date("Y-m-d H:i:s", strtotime('+1 hour'));
 
     // Guardar el token en la base de datos

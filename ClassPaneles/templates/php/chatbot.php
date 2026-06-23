@@ -171,11 +171,9 @@ if ($esHistorial) {
 
     $idUsuario = $_SESSION['id_usuario'];
 
-    /* Extraer año opcional */
     preg_match('/\b(20\d{2})\b/', $mensaje, $matchYear);
     $anio = $matchYear[1] ?? null;
 
-    /* Extraer aula opcional */
     preg_match('/([a-zA-Z]+[- ]?\d+)/', $mensaje, $matchAula);
     $codigoAula = isset($matchAula[1])
         ? strtoupper(str_replace(' ', '-', $matchAula[1]))
