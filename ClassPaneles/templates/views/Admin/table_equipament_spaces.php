@@ -3,7 +3,7 @@ include '../../php/admin_session.php';
 include '../../php/conexion_be.php';
 
 // Paginación
-$registros_por_pagina = 7;
+$registros_por_pagina = 6;
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $offset = ($pagina_actual - 1) * $registros_por_pagina;
 
@@ -107,6 +107,14 @@ if (isset($_GET['eliminar'])) {
                                 class="<?php echo $currentFile == 'table_reservation.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reservas
                             </a></li>
+                        <li><a href="asistencias_docente.php"
+                                class="<?php echo $currentFile == 'asistencias_docente.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Asistencias
+                            </a></li>
+                        <li><a href="table_equipment_reports.php"
+                                class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
+                            </a></li>
                     </ul>
                 </div>
                 <div class="menu-group">
@@ -199,18 +207,47 @@ if (isset($_GET['eliminar'])) {
         <!-- Paginación -->
         <div class="pagination">
             <?php if ($pagina_actual > 1): ?>
-                <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>" 
-                    class="pagination-button">Anterior</a>
+                <a href="?pagina=<?php echo $pagina_actual - 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
+                class="pagination-button">Anterior</a>
             <?php endif; ?>
 
-            <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
-                <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search); ?>" 
-                    class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>"><?php echo $i; ?></a>
+            <?php
+            $rango = 2; // Cantidad de páginas antes y después de la actual
+            $inicio = max(1, $pagina_actual - $rango);
+            $fin = min($total_paginas, $pagina_actual + $rango);
+
+            // Primera página
+            if ($inicio > 1) {
+                echo '<a href="?pagina=1&buscar=' . htmlspecialchars($search) . '" class="pagination-button">1</a>';
+
+                if ($inicio > 2) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+            }
+
+            // Páginas centrales
+            for ($i = $inicio; $i <= $fin; $i++):
+            ?>
+                <a href="?pagina=<?php echo $i; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
+                class="pagination-button <?php echo $i === $pagina_actual ? 'active' : ''; ?>">
+                    <?php echo $i; ?>
+                </a>
             <?php endfor; ?>
 
+            <?php
+            // Última página
+            if ($fin < $total_paginas) {
+                if ($fin < $total_paginas - 1) {
+                    echo '<span class="pagination-dots">...</span>';
+                }
+
+                echo '<a href="?pagina=' . $total_paginas . '&buscar=' . htmlspecialchars($search) . '" class="pagination-button">' . $total_paginas . '</a>';
+            }
+            ?>
+
             <?php if ($pagina_actual < $total_paginas): ?>
-                <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>" 
-                    class="pagination-button">Siguiente</a>
+                <a href="?pagina=<?php echo $pagina_actual + 1; ?>&buscar=<?php echo htmlspecialchars($search); ?>"
+                class="pagination-button">Siguiente</a>
             <?php endif; ?>
         </div>
     </main>

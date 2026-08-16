@@ -2336,3 +2336,45 @@ input:checked + .slider::before {
 .pendientes{
     border-top:5px solid #6c757d;
 }
+/*BOTON DE CARGAR HORARIO*/
+.search-and-export {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.reservation-actions {
+    display: flex;
+    align-items: center;
+    gap: 150px;
+    margin-left: auto;
+}
+
+.btn-cargar-horario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    height: 40px;
+    padding: 0 18px;
+
+    background-color: #219989;
+    color: white;
+
+    border-radius: 12px;
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    box-sizing: border-box;
+}
+
+.btn-cargar-horario:hover {
+    background-color: #197d70;
+}
+
+.btn-cargar-horario ion-icon {
+    font-size: 17px;
+}

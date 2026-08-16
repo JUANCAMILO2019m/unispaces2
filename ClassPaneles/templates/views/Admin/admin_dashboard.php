@@ -281,6 +281,10 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                                 class="<?php echo $currentFile == 'table_equipment_reports.php' ? 'active' : ''; ?>">
                                 <ion-icon name="calendar-outline"></ion-icon> Reportes equipamientos
                             </a></li>
+                        <li><a href="analitica.php"
+                                class="<?php echo $currentFile == 'analitica.php' ? 'active' : ''; ?>">
+                                <ion-icon name="calendar-outline"></ion-icon> Analítica
+                            </a></li>
                     </ul>
                 </div>
                 <div class="menu-group">

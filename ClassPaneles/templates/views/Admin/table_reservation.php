@@ -173,6 +173,12 @@ $currentFile = basename($_SERVER['PHP_SELF']);
             <input type="text" name="buscar" placeholder="Buscar reserva..." value="<?php echo isset($_GET['buscar']) ? htmlspecialchars($_GET['buscar']) : ''; ?>">
             <button type="submit">Buscar</button>
         </form>
+
+        <div class="reservation-actions">
+            <a href="cargar_horario.php" class="btn-cargar-horario"
+                class="<?php echo $currentFile == 'cargar_horario.php' ? 'active' : ''; ?>">
+                <ion-icon name="cloud-upload-outline"></ion-icon> Cargar Horario
+            </a>
         <div class="export-dropdown-container">
             <button id="exportButton" class="dropdown-btn" onclick="toggleExportDropdown(event)">Exportar ▼</button>
             <div id="exportDropdown" class="dropdown-content-reservation">
@@ -184,6 +190,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
                 </form>
             </div>
         </div>
+    </div>
     </div>
 
     <div class="table-container">

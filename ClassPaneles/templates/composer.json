@@ -5,7 +5,9 @@
     "require": {
         "phpmailer/phpmailer": "^6.0",
         "tecnickcom/tcpdf": "^6.8",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "phpoffice/phpspreadsheet": "1.29",
+        "maennchen/zipstream-php": "^2.1"
     },
     "config": {
         "cafile": "C:/xampp/php/extras/ssl",
