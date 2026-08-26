@@ -197,6 +197,13 @@ if (isset($_POST['reserve_space'])) {
     mysqli_query($conexion, $query_estudiante);
 }
 
+    if (isset($_POST['add_to_google_calendar']) && $_POST['add_to_google_calendar'] === '1') {
+        $_SESSION['google_calendar_reservation_id'] = $id_reservacion;
+        $_SESSION['google_calendar_space_id'] = $space_id;
+        header('Location: google_calendar_connect.php');
+        exit;
+    }
+
     echo "<script>alert('Solicitud de reserva enviada para aprobación.'); window.location.href='update_spaces_docente.php?id=" . $space_id . "';</script>";
     exit();
 }
@@ -501,6 +508,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
     <h2>Formulario de Reserva</h2>
         <form id="reserve-form" method="POST">
             <input type="hidden" name="reserve_space" value="true">
+            <input type="hidden" id="add_to_google_calendar" name="add_to_google_calendar" value="0">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id['id']); ?>">
             <input type="hidden" name="id_espacio" value="<?php echo htmlspecialchars($space_id); ?>">
             <input type="hidden" name="id_usuario" value="<?php echo htmlspecialchars($id_usuario) ?>">
@@ -599,6 +607,11 @@ function openModal() {
 function closeModal() {
     document.getElementById("modal").style.display = "none";
 }
+
+document.getElementById('reserve-form').addEventListener('submit', function () {
+    const addToCalendar = window.confirm('¿Deseas agregar esta solicitud a Google Calendar?');
+    document.getElementById('add_to_google_calendar').value = addToCalendar ? '1' : '0';
+});
 
 window.onclick = function (event) {
     const modalReserva = document.getElementById("modal");
@@ -888,6 +901,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+
+<?php if (isset($_GET['calendar'])): ?>
+<script>
+const calendarMessages = {
+    created: 'La solicitud fue enviada y se agregó a Google Calendar como pendiente de aprobación.',
+    cancelled: 'No se agregó la solicitud a Google Calendar porque se canceló la autorización.',
+    not_configured: 'La solicitud fue enviada, pero Google Calendar aún no está configurado.',
+    authorization_error: 'La solicitud fue enviada, pero no fue posible autorizar Google Calendar.',
+    token_error: 'La solicitud fue enviada, pero Google no devolvió un token válido.',
+    event_error: 'La solicitud fue enviada, pero no se pudo crear el evento en Google Calendar.',
+    reservation_not_found: 'No se encontró la solicitud para agregarla a Google Calendar.'
+};
+const calendarStatus = <?= json_encode($_GET['calendar']) ?>;
+if (calendarMessages[calendarStatus]) {
+    alert(calendarMessages[calendarStatus]);
+}
+</script>
+<?php endif; ?>
 
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 </body>

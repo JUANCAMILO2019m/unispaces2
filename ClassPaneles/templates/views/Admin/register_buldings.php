@@ -131,7 +131,6 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 <body>
     <div class="container">
-        <!-- Sidebar -->
         <?php
         $currentFile = basename($_SERVER['PHP_SELF']);
         ?>
@@ -218,8 +217,6 @@ while ($row = mysqli_fetch_assoc($result)) {
                 </div>
             </div>
         </aside>
-
-        <!-- Main Content -->
         <main class="content">
             <div class="content-header">
                 <h2>Gestión de Edificios</h2>

@@ -22,14 +22,16 @@ body {
 /* Sidebar */
 .sidebar {
     width: 230px;
+    flex-shrink: 0;
     background-color: #fff;
     border-right: 1px solid #ddd;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding-top: 10px;
-    padding-right: 20px;
-    min-height: 110vh; 
+    padding: 10px 15px;
+    height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .logo {
@@ -103,6 +105,7 @@ body {
 } 
 
 .profile {
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -117,6 +120,11 @@ body {
     object-fit: cover;
 }
 
+.profile-info {
+    flex: 1 1 auto;
+    min-width: 0; 
+}
+
 .user-name {
     font-size: 14px;
     font-weight: bold;
@@ -129,6 +137,7 @@ body {
 }
 
 .user-email {
+    max-width: 100%;
     font-size: 13px;
     font-family: 'Inter', sans-serif;
     color: #777;

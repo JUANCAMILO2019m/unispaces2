@@ -7,8 +7,9 @@
  *   composer require phpoffice/phpspreadsheet
  *
  * Columnas esperadas en la hoja "Horarios" (o la primera hoja):
- *   correo_usuario | codigo_espacio | dia_semana | hora_inicio | hora_fin
+ *   correo_usuario | id_espacio | dia_semana | hora_inicio | hora_fin
  *   fecha_inicio_rango | fecha_fin_rango | tipo_reservacion | descripcion
+ *   correos_estudiantes   <-- NUEVO: uno o varios correos separados por coma
  */
 
 // --- Blindaje: esta ruta SIEMPRE debe responder JSON, nunca HTML de error ---
@@ -112,7 +113,8 @@ $encabezados = array_map(function ($h) {
 $colIndex = array_flip($encabezados);
 $columnasRequeridas = [
     'correo_usuario', 'id_espacio', 'dia_semana', 'hora_inicio', 'hora_fin',
-    'fecha_inicio_rango', 'fecha_fin_rango', 'tipo_reservacion', 'descripcion'
+    'fecha_inicio_rango', 'fecha_fin_rango', 'tipo_reservacion', 'descripcion',
+    'correos_estudiantes' // NUEVO
 ];
 foreach ($columnasRequeridas as $col) {
     if (!isset($colIndex[$col])) {
@@ -124,6 +126,7 @@ foreach ($columnasRequeridas as $col) {
 // --- Preparar consultas reutilizables (todas parametrizadas) ---
 $stmtUsuario = mysqli_prepare($conexion, "SELECT id FROM usuarios WHERE correo = ? LIMIT 1");
 $stmtEspacio = mysqli_prepare($conexion, "SELECT id, codigo FROM espacios_academicos WHERE id = ? LIMIT 1");
+$stmtEstudiante = mysqli_prepare($conexion, "SELECT id FROM estudiantes WHERE correo = ? LIMIT 1"); // NUEVO
 $stmtConflicto = mysqli_prepare($conexion, "
     SELECT COUNT(*) AS conflictos FROM reservaciones
     WHERE id_espacio = ?
@@ -140,13 +143,17 @@ $stmtInsertar = mysqli_prepare($conexion, "
     INSERT INTO reservaciones (id_usuario, id_espacio, fecha_inicio, fecha_final, tipo_reservacion, descripcion, estado)
     VALUES (?, ?, ?, ?, ?, ?, ?)
 ");
+$stmtInsertarEstudiante = mysqli_prepare($conexion, "
+    INSERT INTO reservaciones_estudiantes (id_reservacion, id_estudiante) VALUES (?, ?)
+"); // NUEVO
 
-if (!$stmtUsuario || !$stmtEspacio || !$stmtConflicto || !$stmtInsertar) {
-    responderError('Error preparando las consultas SQL: ' . mysqli_error($conexion) . '. Revisa que los nombres de tabla/columna (usuarios.correo, espacios_academicos.id/codigo, reservaciones.*) coincidan con tu base de datos real.');
+if (!$stmtUsuario || !$stmtEspacio || !$stmtEstudiante || !$stmtConflicto || !$stmtInsertar || !$stmtInsertarEstudiante) {
+    responderError('Error preparando las consultas SQL: ' . mysqli_error($conexion) . '. Revisa que los nombres de tabla/columna (usuarios.correo, espacios_academicos.id/codigo, estudiantes.correo, reservaciones_estudiantes.*) coincidan con tu base de datos real.');
 }
 
 $usuarioCache = [];
 $espacioCache = [];
+$estudianteCache = []; // NUEVO
 
 $insertadas = 0;
 $errores = [];
@@ -166,6 +173,7 @@ for ($i = 1; $i < count($filas); $i++) {
     $fechaFinRango = trim((string)($fila[$colIndex['fecha_fin_rango']] ?? ''));
     $tipoReservacion = trim((string)($fila[$colIndex['tipo_reservacion']] ?? ''));
     $descripcion = trim((string)($fila[$colIndex['descripcion']] ?? ''));
+    $correosEstudiantesRaw = trim((string)($fila[$colIndex['correos_estudiantes']] ?? '')); // NUEVO
 
     if ($correo === '' && $idEspacioRaw === '') {
         continue; // fila vacía, se ignora silenciosamente
@@ -204,6 +212,38 @@ for ($i = 1; $i < count($filas); $i++) {
         $errores[] = ['fila' => $numFila, 'detalle' => 'fecha_fin_rango es anterior a fecha_inicio_rango.'];
         continue;
     }
+
+    // --- NUEVO: resolver los estudiantes de la fila ANTES de crear las reservas ---
+    if ($correosEstudiantesRaw === '') {
+        $errores[] = ['fila' => $numFila, 'detalle' => 'No se indicó ningún estudiante en correos_estudiantes.'];
+        continue;
+    }
+    $correosEstudiantes = array_filter(array_map('trim', explode(',', str_replace(';', ',', $correosEstudiantesRaw))));
+
+    $idsEstudiantes = [];
+    $estudiantesNoEncontrados = [];
+    foreach ($correosEstudiantes as $correoEst) {
+        if (!array_key_exists($correoEst, $estudianteCache)) {
+            mysqli_stmt_bind_param($stmtEstudiante, 's', $correoEst);
+            mysqli_stmt_execute($stmtEstudiante);
+            $resEst = mysqli_stmt_get_result($stmtEstudiante);
+            $estudianteCache[$correoEst] = $resEst && mysqli_num_rows($resEst) > 0 ? mysqli_fetch_assoc($resEst)['id'] : null;
+        }
+        if ($estudianteCache[$correoEst] === null) {
+            $estudiantesNoEncontrados[] = $correoEst;
+        } else {
+            $idsEstudiantes[] = $estudianteCache[$correoEst];
+        }
+    }
+    if (!empty($estudiantesNoEncontrados)) {
+        $errores[] = ['fila' => $numFila, 'detalle' => 'Estudiante(s) no encontrado(s): ' . implode(', ', $estudiantesNoEncontrados)];
+        continue;
+    }
+    if (empty($idsEstudiantes)) {
+        $errores[] = ['fila' => $numFila, 'detalle' => 'No se pudo resolver ningún estudiante válido para esta fila.'];
+        continue;
+    }
+    // --- fin bloque NUEVO ---
 
     // Usuario (con caché para no repetir consultas)
     if (!array_key_exists($correo, $usuarioCache)) {
@@ -271,6 +311,18 @@ for ($i = 1; $i < count($filas); $i++) {
             );
             if (mysqli_stmt_execute($stmtInsertar)) {
                 $insertadas++;
+                $idReservacion = mysqli_insert_id($conexion); // NUEVO
+
+                // NUEVO: insertar la relación con cada estudiante de la fila
+                foreach ($idsEstudiantes as $idEstudiante) {
+                    mysqli_stmt_bind_param($stmtInsertarEstudiante, 'ii', $idReservacion, $idEstudiante);
+                    if (!mysqli_stmt_execute($stmtInsertarEstudiante)) {
+                        $errores[] = [
+                            'fila' => $numFila,
+                            'detalle' => "Reserva #$idReservacion creada, pero no se pudo vincular al estudiante id $idEstudiante: " . mysqli_error($conexion)
+                        ];
+                    }
+                }
             } else {
                 $errores[] = [
                     'fila' => $numFila,

@@ -229,9 +229,9 @@ while ($fila = mysqli_fetch_assoc($resultReservas)) {
 
 <body>
     <div class="container">
-        <?php
-$currentFile = basename($_SERVER['PHP_SELF']);
-?>
+    <?php
+    $currentFile = basename($_SERVER['PHP_SELF']);
+    ?>
         <aside class="sidebar">
             <div class="logo">
                 <img src="../../assets/images/logo2.png" alt="Logo" class="logo-img" width="150" height="auto">
@@ -313,7 +313,7 @@ $currentFile = basename($_SERVER['PHP_SELF']);
             <div class="divider"></div>
             <div class="profile">
                 <img src="<?php echo $imagen; ?>" alt="Foto de perfil" class="profile-img">
-                <div>
+                <div class="profile-info">
                     <p class="user-name"><?php echo htmlspecialchars($nombre_completo); ?></p>
                     <p class="user-email"> <?php echo htmlspecialchars($correo); ?></p>
                 </div>
